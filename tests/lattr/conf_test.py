@@ -2,12 +2,37 @@
 # coding=utf-8
 
 import os
+import logging
 import unittest
 
 from lattr.conf import Settings, default_settings, ENVIRONMENT_VARIABLE
 
 # Test settings
 DB_BACKEND = 'test_backend'
+LOGGING_CONFIG = {
+    'version': 1,
+    'disable_existing_loggers': False,
+    'loggers': {
+        'lattr': {
+            'handlers': ['fake']
+        }
+    },
+    'handlers': {
+        'fake': {
+            'class': 'lattr.conf_test.FakeHandler',
+            'level': 'INFO'
+        }
+    }
+}
+
+
+class FakeHandler(logging.Handler):
+    def __init__(self):
+        logging.Handler.__init__(self)
+        self.record = None
+
+    def emit(self, record):
+        self.record = record
 
 
 class SettingsTestCase(unittest.TestCase):

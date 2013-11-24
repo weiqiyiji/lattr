@@ -11,14 +11,16 @@ setup(name='lattr',
       author_email='weiqiyiji@gmail.com',
       url='https://github.com/weiqiyiji/lattr',
       license='',
-      packages=find_packages(exclude=['ez_setup', 'examples', 'tests']),
+      packages=find_packages(exclude=['ez_setup', 'examples']),
       include_package_data=True,
       zip_safe=False,
       install_requires=[
           'Fabric',
           'Flask',
           'sqlalchemy',
-          'gunicorn'
+          'gunicorn',
+          'lxml',
+          'beautifulsoup4'
       ],
       entry_points={
           'console_scripts': [
