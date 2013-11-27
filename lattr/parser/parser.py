@@ -2,6 +2,7 @@
 # coding=utf-8
 
 import re
+import math
 from bs4 import BeautifulSoup
 
 
@@ -42,10 +43,17 @@ class HTMLCleaner(object):
         return html
 
 
+RE_UNLIKELY_CANDIDATES = ('combx|comment|community|disqus|extra|foot|'
+                          'header|menu|remark|rss|shoutbox|sidebar|'
+                          'sponsor|ad-break|agegate|pagination|pager|'
+                          'popup|tweet|twitter')
+
+
 class Document(object):
 
     MAXIMUM_TITLE_LENGTH = 150
     MINIMUM_TITLE_LENGTH = 15
+    NODE_TO_SCORE_MIN_LENGHT = 25
 
     def __init__(self, html):
         if not html:
@@ -53,6 +61,7 @@ class Document(object):
         self.html = html
         self._soup = BeautifulSoup(html, 'lxml')
         self._title = None
+        self._main_content = None
 
     @property
     def title(self):
@@ -61,12 +70,14 @@ class Document(object):
         return self._title
 
     def parse(self):
+        # Remove these tags first
         self._remove_tags('script', 'style')
         # TODO(jiluo): Add body to body_cache
         # TODO(jiluo): Find next page link
 
         self._prepare_document()
         self._parse_title()
+        self._grab_main_content()
 
         return str(self._soup)
 
@@ -100,4 +111,65 @@ class Document(object):
             if h1tags and len(h1tags) == 1:
                 current_title = h1tags[0].text
 
-        self._title = current_title
+    def _grab_main_content(self):
+        scores = {}
+        for node in self._soup.descendants:
+            if node.name not in ('p', 'td', 'pre', 'div'):
+                continue
+            inner_text = node.text
+            if len(inner_text) < NODE_TO_SCORE_MIN_LENGHT):
+                continue
+            parent_node = node.parent
+            if not parent_node or not parent_node.name:
+                continue
+            if parent_node not in scores:
+                scores[candidates] = 0
+            grand_parent_node = parent_node.parent
+            if (grand_parent_node and
+                grand_parent_node.name and
+                grand_parent_node not in scores):
+                scores[grand_parent_node] = 0
+
+            # Add a point for the paragraph itself as a base.
+            content_score = 1
+
+            # Add points for any commas within this paragraph
+            content_score = content_score + inner_text.count(',')
+
+            # For every 100 characters in this paragraph, add another point.
+            # Up to 3 points.
+            content_score = min(math.floor(len(inner_text) / 100), 3)
+
+            # Add the score to the parent. The grandparent gets half.
+            scores[parent_node] = scores[parent_node] + content_score
+            if grand_parent_node:
+                scores[grand_parent_node] = scores[grand_parent_node] + content_score
+
+        # After we've calculated scores, loop through all of the possible
+        # candidate nodes we found and find the one with the highest score.
+        top_candidate = self._find_top_candidate(scores)
+
+        # Now that we have the top candidate, look through its siblings
+        # for content that might also be related.
+        # Things like preambles, content split by ads that we removed, etc.
+
+    def _find_top_candidate(self, scores):
+        top_candidate = None
+        for candidate, score in scores.iteritems():
+            scores[candidate] = score * (1 - self._link_density(candidate))
+            if not top_candidate || scores[candidate] > scores[top_candidate]:
+                top_candidate = candidate
+        if not top_candidate:
+            top_candidate = self._soup.body
+        return top_candidate
+
+    def _link_density(self, node):
+        '''Get the density of links as a percentage of the content.
+        This is the amount of text that is inside a link
+        divided by the total text in the node.
+        '''
+        links = node.find_all('a')
+        if links:
+            link_length = reduce(lambda accum, x: accum = accum + len(x.text), 0)
+            return link_length / len(node.text)
+        return 0

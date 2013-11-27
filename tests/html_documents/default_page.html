@@ -1,0 +1,801 @@
+<!DOCTYPE html>
+<!--[if IE 6]><html id="ie6" lang="en-US" prefix="og: http://ogp.me/ns#"><![endif]-->
+<!--[if IE 7]><html id="ie7" lang="en-US" prefix="og: http://ogp.me/ns#"><![endif]-->
+<!--[if IE 8]><html id="ie8" lang="en-US" prefix="og: http://ogp.me/ns#"><![endif]-->
+<!--[if !(IE 6) | !(IE 7) | !(IE 8)  ]><!--><html lang="en-US" prefix="og: http://ogp.me/ns#"><!--<![endif]-->
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width" />
+  <meta name="google-site-verification" content="BZsv7UpJVZ6vjyH6gB7xa0XldXOL6DjbGFPvxQihDF8" />
+
+
+  <link rel="profile" href="http://gmpg.org/xfn/11" />
+  <link rel="stylesheet" type="text/css" media="all" href="http://atlassian.wpengine.netdna-cdn.com/wp-content/themes/atlassian/css/screen.css?version=09252013" />
+  <!--[if IE]><link rel="stylesheet" type="text/css" href="http://atlassian.wpengine.netdna-cdn.com/wp-content/themes/atlassian/css/ie.css?version=01232012" /><![endif]-->
+  <link rel="shortcut icon" href="https://blogs.atlassian.com/favicon.ico" />
+  <link rel="pingback" href="http://blogs.atlassian.com/xmlrpc.php" />
+
+  <!--[if lt IE 9]>
+      <script src="http://html5shim.googlecode.com/svn/trunk/html5.js"></script><![endif]
+  -->
+  <!--[if lte IE 8]>
+      <script type="text/javascript">
+          document.createElement('header');
+          document.createElement('hgroup');
+          document.createElement('nav');
+          document.createElement('menu');
+          document.createElement('section');
+          document.createElement('article');
+          document.createElement('aside');
+          document.createElement('footer');
+      </script>
+  <![endif]-->
+
+
+  <!-- This site is optimized with the Yoast WordPress SEO plugin v1.4.18 - http://yoast.com/wordpress/seo/ -->
+  <title>Git team workflows: merge or rebase? | Atlassian Blogs</title>
+  <link rel="canonical" href="http://blogs.atlassian.com/2013/10/git-team-workflows-merge-or-rebase/" />
+  <meta property="og:locale" content="en_US"/>
+  <meta property="og:type" content="article"/>
+  <meta property="og:title" content="Git team workflows: merge or rebase? - Atlassian Blogs"/>
+  <meta property="og:description" content="The question is simple: In a software team using git and feature branching, what&#8217;s the best way to incorporate finished work back to your main line of development? It&#8217;s one of those recurring debates where both sides have strong opinions, and mindful conversation can sometimes be hard (for other examples of heated debate see: The Internet). Should you adopt a rebase policy where the repository history is kept flat and clean? Or a merge policy, which gives you traceability at the expense of readability and clarity (going so far as forbidding fast-forward merges)? A debate exists The topic is a bit controversial; maybe not as much as classic holy wars between vim and Emacs, or between Linux and BSD, but the two camps are vocal. My empirical pulse on all-things-git – scientific, I know! – is that the always merge approach has a slightly bigger mind share. But the always rebase field is also pretty vocal online. For examples see: A rebase-based workflow A Rebase Workflow for Git A Simple Git Rebase Workflow, Explained A Git Workflow for Agile Teams To be honest, the split in two camps – always rebase vs. always merge – can be confusing, because rebase as local cleanup is a different thing than rebase as team policy. Aside: Rebase as cleanup is awesome in the coding lifecycle Rebase as team policy is a different thing than rebase as cleanup. Rebase as cleanup is a healthy part of the coding lifecycle of the git practitioner. Let me detail some example scenarios that show when rebasing is reasonable and effective (and when it&#8217;s not): You&#8217;re developing locally. You have not shared your work with anyone else. At this point, you should prefer rebasing over merging to keep history tidy. If you&#8217;ve got your personal fork of the repository and that is not shared with other developers, you&#8217;re safe to rebase even after you&#8217;ve pushed to your fork. Your code is ready for review. You create a pull request, others are reviewing your work and are potentially fetching it into their fork for local review. At this point you should not rebase your work. You should create &#8216;rework&#8217; commits and update your feature branch. This helps with traceability in the pull request, and prevents the accidental history breakage. Review is done and ready to be integrated into the target branch. Congratulations! You&#8217;re about to delete your feature branch. Given that other developers won&#8217;t be fetch-merging in these changes from this point on, this is your chance to sanitize history. At this point you can rewrite history and fold the original commits and those pesky &#8216;pr rework&#8217; and &#8216;merge&#8217; commits into a small set of focussed commits. Creating an explicit merge for these commits is optional, but has value. It records when the feature graduated to master. With this aside clear we can now talk about policies. I&#8217;ll try to keep a balanced view on the argument, and will mention how the problem is dealt with inside Atlassian. Rebase [&hellip;]"/>
+  <meta property="og:url" content="http://blogs.atlassian.com/2013/10/git-team-workflows-merge-or-rebase/"/>
+  <meta property="og:site_name" content="Atlassian Blogs"/>
+  <meta property="article:publisher" content="http://www.facebook.com/AtlassianSoftware"/>
+  <meta property="og:image" content="http://blogs.atlassian.com/wp-content/uploads/merge-trees-1-600x183.png"/>
+  <!-- / Yoast WordPress SEO plugin. -->
+
+  <link rel='stylesheet' id='prettify-css'  href='http://atlassian.wpengine.netdna-cdn.com/wp-content/plugins/prettify-code-syntax/stylesheets/default.css?ver=3.7.1' type='text/css' media='all' />
+  <link rel='stylesheet' id='codecolorer-css'  href='http://atlassian.wpengine.netdna-cdn.com/wp-content/plugins/codecolorer/codecolorer.css?ver=0.9.9' type='text/css' media='screen' />
+  <link rel='stylesheet' id='lightboxStyle-css'  href='http://atlassian.wpengine.netdna-cdn.com/wp-content/plugins/lightbox-plus/css/dark/colorbox.css?ver=2.0.2' type='text/css' media='screen' />
+  <link rel='stylesheet' id='wp-paginate-css'  href='http://atlassian.wpengine.netdna-cdn.com/wp-content/plugins/wp-paginate/wp-paginate.css?ver=1.2.4' type='text/css' media='screen' />
+  <script type='text/javascript' src='http://atlassian.wpengine.netdna-cdn.com/wp-includes/js/jquery/jquery.js?ver=1.10.2'></script>
+  <script type='text/javascript' src='http://atlassian.wpengine.netdna-cdn.com/wp-includes/js/jquery/jquery-migrate.min.js?ver=1.2.1'></script>
+  <script type='text/javascript' src='http://atlassian.wpengine.netdna-cdn.com/wp-includes/js/comment-reply.min.js?ver=3.7.1'></script>
+  <link rel="EditURI" type="application/rsd+xml" title="RSD" href="http://blogs.atlassian.com/xmlrpc.php?rsd" />
+  <link rel="wlwmanifest" type="application/wlwmanifest+xml" href="http://blogs.atlassian.com/wp-includes/wlwmanifest.xml" />
+  <link rel='shortlink' href='http://wp.me/p2q5Zc-6TA' />
+
+  <!-- All in One SEO Pack 2.0.4 by Michael Torbert of Semper Fi Web Designob_start_detected [-1,-1] -->
+  <meta name="keywords" content="uncategorized" />
+
+  <link rel="canonical" href="http://blogs.atlassian.com/2013/10/git-team-workflows-merge-or-rebase/" />
+  <!-- /all in one seo pack -->
+
+  <!-- Dynamic Widgets v1.5.1 by QURL - http://www.qurl.nl //-->
+
+  <script type="text/javascript">
+    TypekitConfig = {
+    kitId: 'wja5xmm',
+    scriptTimeout: 3750
+    };
+    (function() {
+    var h = document.getElementsByTagName('html')[0];
+    h.className += ' wf-loading';
+    var t = setTimeout(function() {
+    h.className = h.className.replace(/(\s|^)wf-loading(\s|$)/g, '');
+    h.className += ' wf-inactive';
+    }, TypekitConfig.scriptTimeout);
+    var tk = document.createElement('script');
+    tk.src = '//use.typekit.com/' + TypekitConfig.kitId + '.js';
+    tk.type = 'text/javascript';
+    tk.async = 'true';
+    tk.onload = tk.onreadystatechange = function() {
+    var rs = this.readyState;
+    if (rs && rs != 'complete' && rs != 'loaded') return;
+    clearTimeout(t);
+    try { Typekit.load(TypekitConfig); } catch (e) {}
+    };
+    var s = document.getElementsByTagName('script')[0];
+    s.parentNode.insertBefore(tk, s);
+    })();
+  </script>
+
+  <script type="text/javascript" src="//j.clickdensity.com/cr.js"></script>
+  <script type="text/javascript">
+    //<![CDATA[
+    var clickdensity_keyElement = 'kvalue';
+    //]]>
+  </script>
+
+  <link rel="alternate" type="application/rss+xml" title="Developer Feed" href="http://feeds.feedburner.com/AtlassianDeveloperBlog" />
+
+  <!-- Start Changes -->
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.7.2/jquery.min.js" type="text/javascript"></script>
+  <script type="text/javascript">
+	  $(document).ready(function() {
+		if($('#blognav ul li.selected ul').length != 0) {
+		// To fix padding between content and nav if there are sub-categories
+		$('#blognav').after('<div style="height: 32px;"></div>');
+		}
+
+		$('.bn-more > a').click(function() {
+		return false;
+		});
+
+	  });
+  </script>
+  <!-- End Changes -->
+  <script type="text/javascript">
+    adroll_adv_id = "32VY3BYAQRHLDDVMBEAGU2";
+    adroll_pix_id = "7Q44S6SDXNA4NE4TSAUFGF";
+    (function () {
+    var oldonload = window.onload;
+    window.onload = function(){
+    __adroll_loaded=true;
+    var scr = document.createElement("script");
+    var host = (("https:" == document.location.protocol) ? "https://s.adroll.com" : "http://a.adroll.com");
+    scr.setAttribute('async', 'true');
+    scr.type = "text/javascript";
+    scr.src = host + "/j/roundtrip.js";
+    ((document.getElementsByTagName('head') || [null])[0] ||
+    document.getElementsByTagName('script')[0].parentNode).appendChild(scr);
+    if(oldonload){oldonload()}};
+    }());
+  </script>
+
+  <script>
+    var blogCat = '';
+		blogCat = blogCat + 'Developer' + ',';
+		if(blogCat != '') {
+		blogCat = window.location.pathname + '?category=' + blogCat.replace(' ', '').slice(0, -1);
+	  }
+  </script>
+
+  <script>
+	  /*
+    document.domain = "atlassian.com";
+	  requestString = "url=" + encodeURIComponent(document.URL);
+	  requestString = requestString + "&referer=" + encodeURIComponent(document.referrer);
+	  $.ajax({
+	  type: "POST",
+	  url: "//atlassian.com/blogsTrack?" + requestString,
+	  xhrFields: { withCredentials: true }
+	  });
+    */
+  </script>
+
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/1.7.1/jquery.min.js" type="text/javascript"></script>
+  <script src="http://atlassian.wpengine.netdna-cdn.com/wp-content/themes/atlassian/js/cookie.js" type="text/javascript"></script>
+  <script src="//platform.linkedin.com/in.js" type="text/javascript"></script>
+</head>
+<body class="single single-post postid-26510 single-format-standard custom-background">
+  <div style="background: #58afe5; text-align: center; color: #fff; height: 40px; line-height: 40px; position: relative;" id="brandAmpBanner">Say hello to JIRA Agile and JIRA Capture <a href="http://blogs.atlassian.com/2013/08/renaming-greenhopper-and-bonfire/" style="color: #fff; text-decoration: underline;">Learn More</a><span class="arrow" style="text-decoration: none !important;"> &raquo;</span><span id="brandAmpDismiss"></span></div>
+
+
+  <div id="page">
+    <header id="header">
+      <div class="grid">
+        <h1><a href="http://blogs.atlassian.com">Atlassian Blogs</a></h1>
+        <div id="headernav">
+          <div id="globalnav">
+            <ul>
+              <li><a href="http://www.atlassian.com">Atlassian Home</a></li>
+              <li><a href="http://atlassian.com/resources/support">Get Help</a></li>
+              <li><a href="http://marketplace.atlassian.com">Marketplace</a></li>
+            </ul>
+          </div><!--/globalnav-->
+          <div id="headersearch">
+            <form role="search" method="get" id="searchform" action="http://blogs.atlassian.com/" >
+              <div>
+                <input type="text" value="" name="s" id="header-s" placeholder="Search Blogs" />
+                <input type="submit" id="searchsubmit" value="Search" />
+              </div>
+            </form>          </div><!--/headersearch-->
+          </div><!--/headernav-->
+        </div><!--/grid-->
+    </header>
+
+    <div id="main">
+      <div id="blognav">
+
+        <ul>
+          <li id="bn-all" class=""><a href="/">All Blogs</a></li>
+
+	        <li id="bn-products" class=""><a href="http://blogs.atlassian.com/blog-cat/products/">Products</a>
+
+
+
+	        <ul>
+
+						<li class="bn-jira"><a href="http://blogs.atlassian.com/blog-cat/jira/">JIRA</a>
+						</li>
+						<li class="bn-confluence"><a href="http://blogs.atlassian.com/blog-cat/confluence/">Confluence</a>
+						</li>
+						<li class="bn-greenhopper"><a href="http://blogs.atlassian.com/blog-cat/greenhopper/">JIRA Agile</a>
+						</li>
+						<li class="bn-team_calendars"><a href="http://blogs.atlassian.com/blog-cat/team_calendars/">Team Calendars</a>
+						</li>
+						<li class="bn-hipchat"><a href="http://blogs.atlassian.com/blog-cat/hipchat/">HipChat</a>
+						</li>
+						<li class="bn-bitbucket"><a href="http://blogs.atlassian.com/blog-cat/bitbucket/">Bitbucket</a>
+						</li>
+						<li class="bn-stash"><a href="http://blogs.atlassian.com/blog-cat/stash/">Stash</a>
+						</li>
+						<li class="bn-more"><a href="http://blogs.atlassian.com/blog-cat/more/">More</a>
+						<ul>
+							<li><a href="http://blogs.atlassian.com/blog-cat/bonfire/">Bonfire</a></li>
+							<li><a href="http://blogs.atlassian.com/blog-cat/fisheye/">FishEye</a></li>
+							<li><a href="http://blogs.atlassian.com/blog-cat/bamboo/">Bamboo</a></li>
+							<li><a href="http://blogs.atlassian.com/blog-cat/crucible/">Crucible</a></li>
+							<li><a href="http://blogs.atlassian.com/blog-cat/clover/">Clover</a></li>
+							<li><a href="http://blogs.atlassian.com/blog-cat/sourcetree/">SourceTree</a></li>
+						</ul>
+						</li>
+
+	        </ul>
+
+	        </li>
+
+	        <li id="bn-developer" class="selected"><a href="http://blogs.atlassian.com/blog-cat/developer/">Developer</a>
+
+
+
+	        </li>
+
+	        <li id="bn-news" class=""><a href="http://blogs.atlassian.com/blog-cat/news/">News</a>
+
+
+
+	        </li>
+
+
+	      </li>
+      </ul>
+
+
+    </div><!--/blognav-->
+
+
+    <div id="content">
+
+
+
+      <article id="post-26510" class="post-26510 post type-post status-publish format-standard hentry category-uncategorized tag-development-workflow tag-git tag-merge tag-policy tag-rebase odd first-post">
+        <div class="postheader">
+          <h2>
+          Git team workflows: merge or rebase?        </h2>
+          <div class="postinfo">
+            <a href="http://blogs.atlassian.com/author/npaolucci/"><img alt='' src='http://0.gravatar.com/avatar/cfed136c665e297b8bb1d004427e0aa2?s=48&amp;d=http%3A%2F%2F0.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D48&amp;r=PG' class='avatar avatar-48 photo' height='48' width='48' /></a>          <ul>
+            <li>
+            By <a href="http://blogs.atlassian.com/author/npaolucci/">Nicola Paolucci</a>            </li>
+            <li>
+            <a href="http://blogs.atlassian.com/blog-cat/developer/">Developer</a>            </li>
+            <li>On October 28, 2013</li>
+          </ul>
+          <div class="social-media-buttons">
+
+            <div class="postshare">
+              <div class="button facebook">
+                <iframe src="//www.facebook.com/plugins/like.php?href=http%3A%2F%2Fblogs.atlassian.com%2F2013%2F10%2Fgit-team-workflows-merge-or-rebase%2F&amp;send=false&amp;layout=button_count&amp;width=90&amp;show_faces=false&amp;action=like&amp;colorscheme=light&amp;font&amp;height=21" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:90px; height:21px;" allowTransparency="true"></iframe>
+              </div><!--/button-->
+              <div class="button twitter">
+                <a href="//twitter.com/share" class="twitter-share-button" data-url="http://atlss.in/1aOeg0V" data-counturl="http://blogs.atlassian.com/2013/10/git-team-workflows-merge-or-rebase/" data-count="horizontal" data-text="Git team workflows: merge or rebase?" data-via="atlassian">Tweet</a>
+              </div><!--/button-->
+              <div class="button">
+              <script type="IN/Share" data-url="http://blogs.atlassian.com/2013/10/git-team-workflows-merge-or-rebase/" data-counter="right"></script></div>
+              <div class="button google"><g:plusone size="medium" href="http://blogs.atlassian.com/2013/10/git-team-workflows-merge-or-rebase/"></g:plusone></div><!--/button-->
+
+            </div>
+          </div>
+
+
+        </div><!--/postinfo-->
+
+
+      </div><!--/postheader-->
+      <div class="postcontent">
+        <p>The question is simple: In a software team using <a href="http://atlassian.com/git"><span class="text codecolorer">git</span></a> and <a href="https://www.atlassian.com/git/workflows#!workflow-feature-branch">feature branching</a>, what&#8217;s the best way to incorporate finished work back to your main line of development? It&#8217;s one of those recurring debates where both sides have strong opinions, and mindful conversation can sometimes be hard (for other examples of heated debate see: <a href="http://en.wikipedia.org/wiki/Internet">The Internet</a>).</p>
+        <p>Should you adopt a rebase policy where the repository history is kept flat and clean? Or a merge policy, which gives you traceability at the expense of readability and clarity (going so far as forbidding <a href="https://www.atlassian.com/git/tutorial/git-branches#!merge">fast-forward</a> merges)?</p>
+        <h2>A debate exists</h2>
+        <p>The topic is a bit controversial; maybe not as much as classic holy wars between vim and Emacs, or between Linux and BSD, but the two camps are vocal.</p>
+        <p>My empirical pulse on <span class="text codecolorer">all-things-git</span> – scientific, I know! – is that the <strong>always merge</strong> approach has a slightly bigger mind share. But the <strong>always rebase</strong> field is also pretty vocal online. For examples see:</p>
+        <ul>
+          <li><a href="http://unethicalblogger.com/2010/04/02/a-rebase-based-workflow.html">A rebase-based workflow</a></li>
+          <li><a href="http://randyfay.com/content/rebase-workflow-git">A Rebase Workflow for Git</a></li>
+          <li><a href="http://mettadore.com/analysis/a-simple-git-rebase-workflow-explained/">A Simple Git Rebase Workflow, Explained</a></li>
+          <li><a href="http://reinh.com/blog/2009/03/02/a-git-workflow-for-agile-teams.html">A Git Workflow for Agile Teams</a></li>
+        </ul>
+        <p>To be honest, the split in two camps – always rebase vs. always merge – can be confusing, because <strong>rebase as local cleanup</strong> is a different thing than <strong>rebase as team policy</strong>.</p>
+        <h2>Aside: <strong>Rebase as cleanup</strong> is awesome in the coding lifecycle</h2>
+        <p><strong>Rebase as team policy</strong> is a different thing than <strong>rebase as cleanup</strong>. <strong>Rebase as cleanup</strong> is a healthy part of the coding lifecycle of the <span class="text codecolorer">git</span> practitioner. Let me detail some example scenarios that show when rebasing is reasonable and effective (and when it&#8217;s not):</p>
+        <ul>
+          <li><strong>You&#8217;re developing locally.</strong> You have not shared your work with anyone else. At this point, you should prefer rebasing over merging to keep history tidy. If you&#8217;ve got your personal fork of the repository and that is not shared with other developers, you&#8217;re safe to rebase even after you&#8217;ve pushed to your fork.</li>
+          <li><strong>Your code is ready for review.</strong> You create a pull request, others are reviewing your work and are potentially fetching it into their fork for local review. At this point you should not rebase your work. You should create &#8216;rework&#8217; commits and update your feature branch. This helps with traceability in the pull request, and prevents the accidental history breakage.</li>
+          <li><strong>Review is done and ready to be integrated into the target branch.</strong> Congratulations! You&#8217;re about to delete your feature branch. Given that other developers won&#8217;t be fetch-merging in these changes from this point on, this is your chance to sanitize history. At this point you can rewrite history and fold the original commits and those pesky &#8216;pr rework&#8217; and &#8216;merge&#8217; commits into a small set of focussed commits. Creating an explicit merge for these commits is optional, but has value. It records when the feature graduated to master.</li>
+        </ul>
+        <p>With this aside clear we can now talk about <strong>policies</strong>. I&#8217;ll try to keep a balanced view on the argument, and will mention how the problem is dealt with inside Atlassian.</p>
+        <h2><strong>Rebase team policy</strong>: definition, pros, and cons</h2>
+        <p>It&#8217;s obviously hard to generalize since every team is different, but we have to start from somewhere. Consider this policy as a possible example: When a feature branch&#8217;s development is complete, rebase/<a href="http://git-scm.com/book/en/Git-Tools-Rewriting-History">squash</a> all the work down to the minimum number of meaningful commits and <strong>avoid creating a merge commit</strong> – either making sure the changes <a href="https://www.atlassian.com/git/tutorial/git-branches#!merge">fast-forward</a> (or simply <a href="https://www.kernel.org/pub/software/scm/git/docs/git-cherry-pick.html"><span class="text codecolorer">cherry-pick</span></a> those commits into the target branch).</p>
+        <p>While the work is still in progress and a feature branch needs to be brought up to date with the upstream target branch, use <span class="text codecolorer">rebase</span> – as opposed to <span class="text codecolorer">pull</span> or <span class="text codecolorer">merge</span> – not to pollute the history with spurious merges.</p>
+        <h3>Pros:</h3>
+        <ul>
+          <li>Code history remains flat and readable. Clean, clear commit messages are as much part of the documentation of your code base as code comments, comments on your issue tracker etc. For this reason, it&#8217;s important not to pollute history with 31 single-line commits that partially cancel each other out for a single feature or bug fix. Going back through history to figure out when a bug or feature was introduced, and why it was done, is going to be tough in a situation like this.</li>
+          <li>Manipulating a single commit is easy (e.g. reverting them).</li>
+        </ul>
+        <h3>Cons:</h3>
+        <ul>
+          <li>Squashing the feature down to a handful of commits can hide context, unless you keep around the historical branch with the entire development history.</li>
+          <li>Rebasing doesn&#8217;t play well with <a href="https://www.atlassian.com/software/stash/overview/pull-requests">pull requests</a>, because you can&#8217;t see what minor changes someone made if they rebased (incidentally, the consensus inside the <a href="http://www.atlassian.com/software/stash/overview">Stash</a> development team is to never rebase during a pull request).</li>
+          <li>Rebasing can be dangerous! Rewriting history of shared branches is prone to team work breakage. This can be mitigated by doing the rebase/squash on a copy of the feature branch, but rebase carries the implication that competence and carefulness must be employed.</li>
+          <li>It&#8217;s more work: Using rebase to keep your feature branch updated requires that you resolve similar conflicts again and again. Yes, you can <a href="https://www.kernel.org/pub/software/scm/git/docs/git-rerere.html">reuse recorded resolutions (rerere)</a> sometimes, but <span class="text codecolorer">merges</span> win here: Just solve the conflicts one time, and you&#8217;re set.</li>
+          <li>Another side effect of rebasing with remote branches is that you need to <em>force push</em> at some point. The biggest problem we&#8217;ve seen at Atlassian is that people force push – which is fine – but haven&#8217;t set <span class="text codecolorer">git push.default</span>. This results in updates to all branches having the same name, both locally and remotely, and that is <strong>dreadful</strong> to deal with.</li>
+        </ul>
+        <p><strong>NOTE: When history is rewritten in a shared branch touched by multiple developers breakage happens</strong>.</p>
+        <h2><strong>Merge team policy</strong>: definitions, pros, and cons</h2>
+        <p><strong>Always Merge</strong>-based policies instead flow like this: When a feature branch is complete merge it to your target branch (<span class="text codecolorer">master</span> or <span class="text codecolorer">develop</span> or <span class="text codecolorer">next</span>).</p>
+        <p>Make sure the merge is explicit with <span class="text codecolorer">&#8211;no-ff</span>, which forces <span class="text codecolorer">git</span> to record a merge commit in all cases, even if the changes could be replayed automatically on top of the target branch.</p>
+        <h3>Pros:</h3>
+        <ul>
+          <li>Traceability: This helps keeping information about the historical existence of a feature branch and groups together all commits part of the feature.</li>
+        </ul>
+        <h3>Cons:</h3>
+        <ul>
+          <li>History can become intensely polluted by lots of merge commits, and visual charts of your repository can have rainbow branch lines that don&#8217;t add too much information, if not outright obfuscate what&#8217;s happening. (Now to be fair, confusion is easily solved by knowing how to navigate your history; The trick here is to use, for example, <span class="text codecolorer">git log &#8211;first-parent</span> to make sense of what happened.)</li>
+        </ul>
+        <p><a href="http://atlassian.wpengine.netdna-cdn.com/wp-content/uploads/merge-trees-1-600x183.png" rel="lightbox[26510]" title="Git team workflows: merge or rebase?"><img class="alignnone size-large wp-image-24968" alt="merge-1" src="http://atlassian.wpengine.netdna-cdn.com/wp-content/uploads/merge-trees-1-600x183.png" /></a></p>
+        <ul>
+          <li>Debugging using <span class="text codecolorer">git bisect</span> can become much harder due to the merge commits.</li>
+        </ul>
+        <h2>Decisions, decisions, decisions: What do you value most?</h2>
+        <p>So what&#8217;s best? What do the experts recommend?</p>
+        <p>If you and your team are not familiar with, or don&#8217;t understand the intricacies of <span class="text codecolorer">rebase</span>, then you probably shouldn&#8217;t use it. In this context, <strong>always merge</strong> is the safest option.</p>
+        <p>If you and your team are familiar with both options, then the main decision revolves around this: <strong>Do you value more a clean, linear history? Or the traceability of your branches?</strong> In the first case go for a <strong>rebase</strong> policy, in the later go for a <strong>merge</strong> one.</p>
+        <p>Note that a rebase policy comes with small contraindications and takes more effort.</p>
+        <h3>At Atlassian</h3>
+        <p>The policy inside Atlassian&#8217;s <a href="http://www.atlassian.com/software/stash/overview">Stash</a> team is always to merge feature branches, and require that branches are merged through a <a href="https://www.atlassian.com/software/stash/overview/pull-requests">pull request</a> for quality and code review. But the team is not too strict around fast-forward.</p>
+        <h3>Conclusions and acknowledgements</h3>
+        <p>This article is the result of the <a href="https://www.atlassian.com/software/confluence">confluence</a> of insightful exchanges (pun intended!) with the <a href="http://www.atlassian.com/software/stash/overview">Stash</a> team on the topic.</p>
+        <p>This piece hopefully dispels the doubts on this, and allows you to adopt an approach that works for your team. Follow me <a href="http://twitter.com/durdn">@durdn</a>, and the fantastic <a href="http://twitter.com/AtlDevTools">@AtlDevtools</a> team for more <span class="text codecolorer">git</span> awesomeness.</p>
+      </div><!--/postcontent-->
+      <div class="postmeta">
+        <div class="tags">
+          <strong>Tags:</strong> <a href="http://blogs.atlassian.com/tag/development-workflow/" rel="tag">development workflow</a>, <a href="http://blogs.atlassian.com/tag/git/" rel="tag">git</a>, <a href="http://blogs.atlassian.com/tag/merge/" rel="tag">merge</a>, <a href="http://blogs.atlassian.com/tag/policy/" rel="tag">policy</a>, <a href="http://blogs.atlassian.com/tag/rebase/" rel="tag">rebase</a>        </div><!--/tags-->
+          <div class="social-media-buttons">
+
+            <div class="postshare">
+              <div class="button facebook">
+                <iframe src="//www.facebook.com/plugins/like.php?href=http%3A%2F%2Fblogs.atlassian.com%2F2013%2F10%2Fgit-team-workflows-merge-or-rebase%2F&amp;send=false&amp;layout=button_count&amp;width=90&amp;show_faces=false&amp;action=like&amp;colorscheme=light&amp;font&amp;height=21" scrolling="no" frameborder="0" style="border:none; overflow:hidden; width:90px; height:21px;" allowTransparency="true"></iframe>
+              </div><!--/button-->
+              <div class="button twitter">
+                <a href="//twitter.com/share" class="twitter-share-button" data-url="http://atlss.in/1aOeg0V" data-counturl="http://blogs.atlassian.com/2013/10/git-team-workflows-merge-or-rebase/" data-count="horizontal" data-text="Git team workflows: merge or rebase?" data-via="atlassian">Tweet</a>
+              </div><!--/button-->
+              <div class="button">
+              <script type="IN/Share" data-url="http://blogs.atlassian.com/2013/10/git-team-workflows-merge-or-rebase/" data-counter="right"></script></div>
+              <div class="button google"><g:plusone size="medium" href="http://blogs.atlassian.com/2013/10/git-team-workflows-merge-or-rebase/"></g:plusone></div><!--/button-->
+
+            </div>
+          </div>
+
+
+
+
+          <div class="global_ad"><div class="global_ad_text"><script type='text/javascript'><!--//<![CDATA[
+                                                                                                var m3_u = (location.protocol=='https:'?'https://ace.atlassian.com/b/':'http://ace.atlassian.com/b/');
+                                                                                                var m3_r = Math.floor(Math.random()*99999999999);
+                                                                                                if (!document.MAX_used) document.MAX_used = ',';
+                                                                                                document.write ("<scr"+"ipt type='text/javascript' src='"+m3_u);
+                                                                                                document.write ("?zoneid=29&amp;target=_top");
+                                                                                                document.write ("&amp;ace-targeting=" + ( $.cookie('ace-targeting') || '' ));
+                                                                                                document.write ('&amp;cb=' + m3_r);
+                                                                                                if (document.MAX_used != ',') document.write ("&amp;exclude=" + document.MAX_used);
+                                                                                                document.write (document.charset ? '&amp;charset='+document.charset : (document.characterSet ? '&amp;charset='+document.characterSet : ''));
+                                                                                                document.write ("&amp;loc=" + escape(window.location));
+                                                                                                if (document.referrer) document.write ("&amp;referer=" + escape(document.referrer));
+                                                                                                if (document.context) document.write ("&context=" + escape(document.context));
+                                                                                                if (document.mmm_fo) document.write ("&amp;mmm_fo=1");
+                                                                                                document.write ("'><\/scr"+"ipt>");
+                                                                                                //]]>--></script>
+          </div></div>
+          <div class="global_ad"><div class="global_ad_text"><script type='text/javascript'><!--//<![CDATA[
+                                                                                                var m3_u = (location.protocol=='https:'?'https://ace.atlassian.com/b/':'http://ace.atlassian.com/b/');
+                                                                                                var m3_r = Math.floor(Math.random()*99999999999);
+                                                                                                if (!document.MAX_used) document.MAX_used = ',';
+                                                                                                document.write ("<scr"+"ipt type='text/javascript' src='"+m3_u);
+                                                                                                document.write ("?zoneid=30&amp;target=_top");
+                                                                                                document.write ("&amp;ace-targeting=" + ( $.cookie('ace-targeting') || '' ));
+                                                                                                document.write ('&amp;cb=' + m3_r);
+                                                                                                if (document.MAX_used != ',') document.write ("&amp;exclude=" + document.MAX_used);
+                                                                                                document.write (document.charset ? '&amp;charset='+document.charset : (document.characterSet ? '&amp;charset='+document.characterSet : ''));
+                                                                                                document.write ("&amp;loc=" + escape(window.location));
+                                                                                                if (document.referrer) document.write ("&amp;referer=" + escape(document.referrer));
+                                                                                                if (document.context) document.write ("&context=" + escape(document.context));
+                                                                                                if (document.mmm_fo) document.write ("&amp;mmm_fo=1");
+                                                                                                document.write ("'><\/scr"+"ipt>");
+                                                                                                //]]>--></script></div></div>
+
+
+        </div><!--/postmeta-->
+        <div id="comments">
+
+          <h3 id="commentsheading">Comments (6)</h3>
+
+
+          <ul id="commentslist">
+            <li class="comment even thread-even depth-1" id="comment-113860">
+              <img alt='' src='http://0.gravatar.com/avatar/4eed5285039322bafbeee9102367b0a4?s=45&amp;d=http%3A%2F%2F0.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D45&amp;r=PG' class='avatar avatar-45 photo' height='45' width='45' />      <div class="commentcontent">
+              <div class="commentmessage">
+
+                <p>+Merge cons:</p>
+                <p>Difficult to calculate quickly what has been done in one particular merge commit. To calculate resulting &#8220;diff&#8221; of one particular merge commit you should collect all diffs between this commit and all of the parent commits and add diff of conflict resolving. Could be done, but not so obvious and intuitively.</p>
+              </div><!--/commentmessage-->
+              <div class="commentmeta">
+                <p>
+                  By DIMA on October 28, 2013
+                <span class="sep">/</span> <a class='comment-reply-link' href='/2013/10/git-team-workflows-merge-or-rebase/?replytocom=113860#respond' onclick='return addComment.moveForm("comment-113860", "113860", "respond", "26510")'>Reply</a>          </p>
+              </div><!--/commentmeta-->
+            </div><!--/commentcontent-->
+          </li><!-- #comment-## -->
+          <li class="comment odd alt thread-odd thread-alt depth-1" id="comment-113877">
+            <img alt='' src='http://0.gravatar.com/avatar/2342db5e772efae08f5a6fa04f092a92?s=45&amp;d=http%3A%2F%2F0.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D45&amp;r=PG' class='avatar avatar-45 photo' height='45' width='45' />      <div class="commentcontent">
+            <div class="commentmessage">
+
+              <p>1. Rebase your own stuff before pushing (rebase as clean-up)<br />
+              2. Always rebase feature branches on master if you&#8217;re working on it alone, including at the end of a sprint so hopefully master can simply be fast-forwarded<br />
+              3. Merge master into feature branches if you working in a team and:<br />
+              3a) If the team can coordinate, rebase on master at the end of the sprint, else<br />
+              3b) If coordination is difficult (remoteness, timezones, &#8230;), just merge.<br />
+              4. Enjoy mostly readable history <img src='http://atlassian.wpengine.netdna-cdn.com/wp-includes/images/smilies/icon_smile.gif' alt=':)' class='wp-smiley' /> </p>
+            </div><!--/commentmessage-->
+            <div class="commentmeta">
+              <p>
+                By Nick on October 28, 2013
+              <span class="sep">/</span> <a class='comment-reply-link' href='/2013/10/git-team-workflows-merge-or-rebase/?replytocom=113877#respond' onclick='return addComment.moveForm("comment-113877", "113877", "respond", "26510")'>Reply</a>          </p>
+            </div><!--/commentmeta-->
+          </div><!--/commentcontent-->
+        </li><!-- #comment-## -->
+        <li class="comment even thread-even depth-1" id="comment-113879">
+          <img alt='' src='http://0.gravatar.com/avatar/a72c9f62f095bbd142c9ff73f4cd8925?s=45&amp;d=http%3A%2F%2F0.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D45&amp;r=PG' class='avatar avatar-45 photo' height='45' width='45' />      <div class="commentcontent">
+          <div class="commentmessage">
+
+            <p>+Rebase pros<br />
+            The result on the main line after a pre-rebased branch merge will be identical to what existed on the feature branch before the merge. This means that the team can be sure that what is being considered during the pull request will be the result on the main line exactly. The team can then be confident the main-line always meets the quality thresholds of the team (measured by peer review and/or actual automated tests or whatever). Conversely, merging divergent changes cannot give this confidence.</p>
+            <p>Having said that, in a busy repository this might add a lot of overhead. e.g. you can imagine many pull requests needing to be rebased as they age.</p>
+          </div><!--/commentmessage-->
+          <div class="commentmeta">
+            <p>
+              By brian on October 28, 2013
+            <span class="sep">/</span> <a class='comment-reply-link' href='/2013/10/git-team-workflows-merge-or-rebase/?replytocom=113879#respond' onclick='return addComment.moveForm("comment-113879", "113879", "respond", "26510")'>Reply</a>          </p>
+          </div><!--/commentmeta-->
+        </div><!--/commentcontent-->
+      </li><!-- #comment-## -->
+      <li class="comment odd alt thread-odd thread-alt depth-1" id="comment-113925">
+        <img alt='' src='http://0.gravatar.com/avatar/61b43d7cd9790878918d9d4e35fb5345?s=45&amp;d=http%3A%2F%2F0.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D45&amp;r=PG' class='avatar avatar-45 photo' height='45' width='45' />      <div class="commentcontent">
+        <div class="commentmessage">
+
+          <p>&#8220;Using rebase to keep your feature branch updated requires that you resolve similar conflicts again and again.&#8221;</p>
+          <p>That makes it sound like you&#8217;ll have to merge the same change again and again, but you&#8217;d only have to merge changes again if someone else changed the file between your rebases. And if that happens wouldn&#8217;t the Merge Team Policy require merging again too?</p>
+        </div><!--/commentmessage-->
+        <div class="commentmeta">
+          <p>
+            By Brad Cupit on October 29, 2013
+          <span class="sep">/</span> <a class='comment-reply-link' href='/2013/10/git-team-workflows-merge-or-rebase/?replytocom=113925#respond' onclick='return addComment.moveForm("comment-113925", "113925", "respond", "26510")'>Reply</a>          </p>
+        </div><!--/commentmeta-->
+      </div><!--/commentcontent-->
+    </li><!-- #comment-## -->
+    <li class="comment even thread-even depth-1" id="comment-113997">
+      <a href="http://blog.marcomonteiro.net"><img alt='' src='http://0.gravatar.com/avatar/44a64ea13da9db6c694e9c26b191a0af?s=45&amp;d=http%3A%2F%2F0.gravatar.com%2Favatar%2Fad516503a11cd5ca435acc9bb6523536%3Fs%3D45&amp;r=PG' class='avatar avatar-45 photo' height='45' width='45' /></a>      <div class="commentcontent">
+      <div class="commentmessage">
+
+        <p>I actually wrote a blog post about this myself. <a href="http://blog.marcomonteiro.net/post/are-you-a-merge-or-rebase-guy" rel="nofollow">http://blog.marcomonteiro.net/post/are-you-a-merge-or-rebase-guy</a></p>
+      </div><!--/commentmessage-->
+      <div class="commentmeta">
+        <p>
+          By <a href='http://blog.marcomonteiro.net' rel='external nofollow' class='url'>Marco Monteiro</a> on October 30, 2013
+        <span class="sep">/</span> <a class='comment-reply-link' href='/2013/10/git-team-workflows-merge-or-rebase/?replytocom=113997#respond' onclick='return addComment.moveForm("comment-113997", "113997", "respond", "26510")'>Reply</a>          </p>
+      </div><!--/commentmeta-->
+    </div><!--/commentcontent-->
+  </li><!-- #comment-## -->
+  <li class="comment pingback">
+    <p><strong>Pingback:</strong>  <a href='http://japan.blogs.atlassian.com/2013/11/git-team-workflows-merge-or-rebase/' rel='external nofollow' class='url'>Git チームワークフロー: マージ (merge)、それともリベース (rebase) ? | Atlassian Japan</a></p>
+  </li><!-- #comment-## -->
+</ul><!--/commentslist-->
+
+
+
+</div><!--/comments-->
+
+<div id="responddefault">
+  <div id="respond" class="comment-respond">
+		<h3 id="reply-title" class="comment-reply-title"><strong>Post a Comment</strong> <small><a rel="nofollow" id="cancel-comment-reply-link" href="/2013/10/git-team-workflows-merge-or-rebase/#respond" style="display:none;">or <span>Cancel Reply</span></a></small></h3>
+		<form action="http://blogs.atlassian.com/wp-comments-post.php" method="post" id="commentform" class="comment-form">
+			<p class="comment-form-author"><input id="author" name="author" type="text" value="" placeholder="Name (Required)" size="30" /></p>
+      <p class="comment-form-email"><input id="email" name="email" type="text" value="" placeholder="Email (Required)" size="30" /></p>
+      <p class="comment-form-url"><input id="url" name="url" type="text" value="" placeholder="Website" size="30" /></p>
+			<textarea id="comment" name="comment" cols="45" rows="8" aria-required="true" placeholder="Message"></textarea>												<p class="form-submit">
+			<input name="submit" type="submit" id="respondsubmit" value="Post Comment" />
+			<input type='hidden' name='comment_post_ID' value='26510' id='comment_post_ID' />
+      <input type='hidden' name='comment_parent' id='comment_parent' value='0' />
+		</p>
+		<p style="display: none;"><input type="hidden" id="akismet_comment_nonce" name="akismet_comment_nonce" value="5d8866692c" /></p><p class="comment-subscription-form"><input type="checkbox" name="subscribe_comments" id="subscribe_comments" value="subscribe" style="width: auto; -moz-appearance: checkbox; -webkit-appearance: checkbox;" /> <label class="subscribe-label" id="subscribe-label" for="subscribe_comments">Notify me of follow-up comments by email.</label></p><p class="comment-subscription-form"><input type="checkbox" name="subscribe_blog" id="subscribe_blog" value="subscribe" style="width: auto; -moz-appearance: checkbox; -webkit-appearance: checkbox;" /> <label class="subscribe-label" id="subscribe-blog-label" for="subscribe_blog">Notify me of new posts by email.</label></p>					</form>
+	</div><!-- #respond -->
+</div><!--/responddefault-->    </article><!--/post-->
+
+<div class="pagination">
+  <div class="paginationposts">
+    <div class="newer">
+      <a href="http://blogs.atlassian.com/2013/10/inside-jira-service-desk-the-customer-portal/" rel="next"><span>&laquo;</span> <strong>Inside JIRA Service Desk: the customer portal</strong></a>          </div><!--/newer-->
+      <div class="older">
+        <a href="http://blogs.atlassian.com/2013/10/angry-cookies-solving-the-eus-cookie-directive-for-jira/" rel="prev"><strong>Angry Cookies: Solving the EU&#8217;s &#8220;cookie directive&#8221; for JIRA</strong> <span>&raquo;</span></a>          </div><!--/older-->
+      </div><!--/paginationposts-->
+    </div><!--/pagination-->
+
+
+  </div><!--/content-->
+
+
+
+
+
+  <div id="sidebar">
+
+    <div class="subscribe">
+  	  <h2>Subscribe</h2>
+    </div>
+
+    <p>Subscribe to Developer by email</p>
+
+	  <div id="email-subscription">
+		  <form action="http://feedburner.google.com/fb/a/mailverify" method="post" target="popupwindow" onsubmit="window.open('http://feedburner.google.com/fb/a/mailverify?uri=AtlassianDeveloperBlog', 'popupwindow', 'scrollbars=yes,width=550,height=520');return true">
+		    <input type="text" name="email" placeholder="Your Email" />
+		    <input type="hidden" value="AtlassianDeveloperBlog" name="uri"/>
+		    <input type="hidden" name="loc" value="en_US"/>
+		    <p class="form-submit">
+		      <input type="submit" value="Subscribe" class="button" />
+		    </p>
+		  </form>
+	  </div>
+
+    <p>Subscribe by RSS</p>
+
+    <p id="subscribeRSS">
+
+  	  <a href="http://feeds.feedburner.com/AtlassianDeveloperBlog">Developer RSS feed</a>
+    </p>
+
+    <div class="widget" id="sidebarnav">
+    </div><!--/sidebarnav-->
+    <div class="widget" id="postslist">
+      <h3>Popular Posts</h3>
+      <ul>
+      <li><a href="http://blogs.atlassian.com/2013/10/fight-the-dark-side-of-lean-ux-with-the-experience-canvas/">Fight the dark side of Lean UX with the Experience Canvas</a></li><li><a href="http://blogs.atlassian.com/2013/11/dont-move-to-git/">Don&#8217;t move to Git</a></li><li><a href="http://blogs.atlassian.com/2013/09/do-you-know-cassandra/">Do you know Cassandra?</a></li><li><a href="http://blogs.atlassian.com/2013/09/how-we-do-project-management-at-atlassian/">How we do project management at Atlassian</a></li><li><a href="http://blogs.atlassian.com/2013/10/inside-atlassian-feature-branching-on-the-stash-team/">Inside Atlassian: feature branching on the Stash team</a></li>    </ul>
+    </div><!--/postslist-->
+    <div class="widget" id="tagslist">
+      <h3>Popular Tags</h3>
+      <ul>
+      <li><a href="http://blogs.atlassian.com/tag/plugins/"><strong>plugins</strong> <span class="count">213</span></a><span class="percentage" style="width:100%;"></span></li><li><a href="http://blogs.atlassian.com/tag/wikis/"><strong>wikis</strong> <span class="count">126</span></a><span class="percentage" style="width:59.1549295775%;"></span></li><li><a href="http://blogs.atlassian.com/tag/summit/"><strong>summit</strong> <span class="count">121</span></a><span class="percentage" style="width:56.8075117371%;"></span></li><li><a href="http://blogs.atlassian.com/tag/press-releases/"><strong>press releases</strong> <span class="count">109</span></a><span class="percentage" style="width:51.1737089202%;"></span></li><li><a href="http://blogs.atlassian.com/tag/agile/"><strong>Agile</strong> <span class="count">105</span></a><span class="percentage" style="width:49.2957746479%;"></span></li><li><a href="http://blogs.atlassian.com/tag/plugin/"><strong>plugin</strong> <span class="count">100</span></a><span class="percentage" style="width:46.9483568075%;"></span></li><li><a href="http://blogs.atlassian.com/tag/atlassiantv/"><strong>atlassiantv</strong> <span class="count">94</span></a><span class="percentage" style="width:44.1314553991%;"></span></li><li><a href="http://blogs.atlassian.com/tag/development-tools/"><strong>development tools</strong> <span class="count">84</span></a><span class="percentage" style="width:39.4366197183%;"></span></li><li><a href="http://blogs.atlassian.com/tag/wiki/"><strong>wiki</strong> <span class="count">82</span></a><span class="percentage" style="width:38.4976525822%;"></span></li><li><a href="http://blogs.atlassian.com/tag/git/"><strong>git</strong> <span class="count">81</span></a><span class="percentage" style="width:38.0281690141%;"></span></li>    </ul>
+    </div><!--/tagslist-->
+    <div id="local-blogs-list">
+      <h3>Local Blogs</h3>
+      <ul>
+        <li><a href="http://blogs.atlassian.es">Spain Blog</a></li>
+        <li><a href="http://blogs.atlassian.fr">France Blog</a></li>
+        <li><a href="http://blogs.atlassian.de">Germany Blog</a></li>
+        <li><a href="http://blogs.atlassian.jp">Japan Blog</a></li>
+        <li><a href="http://china.blogs.atlassian.com">China Blog</a></li>
+      </ul>
+    </div>
+
+    <ul>
+      <li id="advanced_text-10" class="widget advanced_text"><script type='text/javascript'><!--//<![CDATA[
+                                                                                                var m3_u = (location.protocol=='https:'?'https://ace.atlassian.com/b/':'http://ace.atlassian.com/b/');
+                                                                                                var m3_r = Math.floor(Math.random()*99999999999);
+                                                                                                if (!document.MAX_used) document.MAX_used = ',';
+                                                                                                document.write ("<scr"+"ipt type='text/javascript' src='"+m3_u);
+                                                                                                document.write ("?zoneid=18&amp;target=_top");
+                                                                                                document.write ("&amp;ace-targeting=" + ( $.cookie('ace-targeting') || '' ));
+                                                                                                document.write ('&amp;cb=' + m3_r);
+                                                                                                if (document.MAX_used != ',') document.write ("&amp;exclude=" + document.MAX_used);
+                                                                                                document.write (document.charset ? '&amp;charset='+document.charset : (document.characterSet ? '&amp;charset='+document.characterSet : ''));
+                                                                                                document.write ("&amp;loc=" + escape(window.location));
+                                                                                                if (document.referrer) document.write ("&amp;referer=" + escape(document.referrer));
+                                                                                                if (document.context) document.write ("&context=" + escape(document.context));
+                                                                                                if (document.mmm_fo) document.write ("&amp;mmm_fo=1");
+                                                                                                document.write ("'><\/scr"+"ipt>");
+                                                                                                //]]>--></script><noscript><a href='https://ace.atlassian.com/d/?n=a9c2baef&amp;cb=INSERT_RANDOM_NUMBER_HERE' target='_top'><img src='https://ace.atlassian.com/c/?zoneid=18&amp;cb=INSERT_RANDOM_NUMBER_HERE&amp;n=a9c2baef' border='0' alt='' /></a></noscript></li>
+
+      <li id="advanced_text-11" class="widget advanced_text"><script type='text/javascript'><!--//<![CDATA[
+                                                                                                var m3_u = (location.protocol=='https:'?'https://ace.atlassian.com/b/':'http://ace.atlassian.com/b/');
+                                                                                                var m3_r = Math.floor(Math.random()*99999999999);
+                                                                                                if (!document.MAX_used) document.MAX_used = ',';
+                                                                                                document.write ("<scr"+"ipt type='text/javascript' src='"+m3_u);
+                                                                                                document.write ("?zoneid=19&amp;target=_top");
+                                                                                                document.write ("&amp;ace-targeting=" + ( $.cookie('ace-targeting') || '' ));
+                                                                                                document.write ('&amp;cb=' + m3_r);
+                                                                                                if (document.MAX_used != ',') document.write ("&amp;exclude=" + document.MAX_used);
+                                                                                                document.write (document.charset ? '&amp;charset='+document.charset : (document.characterSet ? '&amp;charset='+document.characterSet : ''));
+                                                                                                document.write ("&amp;loc=" + escape(window.location));
+                                                                                                if (document.referrer) document.write ("&amp;referer=" + escape(document.referrer));
+                                                                                                if (document.context) document.write ("&context=" + escape(document.context));
+                                                                                                if (document.mmm_fo) document.write ("&amp;mmm_fo=1");
+                                                                                                document.write ("'><\/scr"+"ipt>");
+                                                                                                //]]>--></script><noscript><a href='https://ace.atlassian.com/d/?n=a07b479a&amp;cb=INSERT_RANDOM_NUMBER_HERE' target='_top'><img src='https://ace.atlassian.com/c/?zoneid=19&amp;cb=INSERT_RANDOM_NUMBER_HERE&amp;n=a07b479a' border='0' alt='' /></a></noscript></li>
+
+</ul>
+
+
+<div id="twitterdata">
+  <div id="twitterusername">
+    <a href="http://twitter.com/AtlassianDev">@AtlassianDev</a>
+  </div><!--/twitterusername-->
+  <div> <span class='twitterwidget twitterwidget-title'> </span> <ul><li class="wpTwitterWidgetEmpty">No Tweets Available</li></ul></div>  </div><!--/twitterdata-->
+  <div class="widget" id="twitter">
+  </div><!--/twitter-->
+
+
+</div><!--/sidebar-->    </div><!--/main-->
+
+<!-- footer, from atlassian.com -->
+<div id="footer">
+  <div class="box">
+    <div class="col">
+      <h4><a href="http://atlassian.com/software">Products</a></h4>
+      <ul>
+        <li><a href="http://atlassian.com/software/jira/overview" class="">JIRA</a></li>
+        <li><a href="http://atlassian.com/software/confluence/overview" class="">Confluence</a></li>
+
+        <li><a href="http://atlassian.com/software/stash/overview" class="">Stash</a></li>
+        <li><a href="http://atlassian.com/software/sharepoint-connector/overview" class="">SharePoint Connector</a></li>
+        <li><a href="http://atlassian.com/software/bamboo/overview" class="">Bamboo</a></li>
+        <li><a href="http://atlassian.com/software/fisheye/overview" class="">FishEye</a></li>
+        <li><a href="http://atlassian.com/software/crucible/overview" class="">Crucible</a></li>
+        <li><a href="http://atlassian.com/software/bitbucket/overview" class="">Bitbucket</a></li>
+        <li><a href="http://atlassian.com/software" class="cta">All Products <span class="arrow">&raquo;</span></a></li>
+      </ul>
+    </div>
+    <div class="col">
+      <h4><a href="http://atlassian.com/resources">Resources</a></h4>
+      <ul>
+        <li><a href="http://atlassian.com/resources/support" class="">Get Help</a></li>
+        <li><a href="http://atlassian.com/resources/experts" class="">Experts</a></li>
+        <li><a href="http://atlassian.com/resources/training" class="">Training</a></li>
+        <li><a href="http://atlassian.com/licensing/purchase-licensing" class="">Purchasing FAQ</a></li>
+        <li><a href="http://atlassian.com/tv" class="">AtlassianTV</a></li>
+        <li><a href="http://confluence.atlassian.com/display/ALLDOC/Atlassian+Documentation" class="">Documentation</a></li>
+        <li><a href="http://plugins.atlassian.com" class="">Add-ons</a></li>
+        <li><a href="http://atlassian.com/resources/alliances" class="">Alliances</a></li>
+        <li><a href="https://my.atlassian.com/purchase" class="">Get a Quote</a></li>
+        <li><a href="http://atlassian.com/download" class="">Download</a></li>
+      </ul>
+    </div>
+    <div class="col">
+      <h4><a href="http://atlassian.com/company">Company</a></h4>
+      <ul>
+        <li><a href="http://atlassian.com/company" class="">Overview</a></li>
+        <li><a href="http://atlassian.com/company/about" class="">About Us</a></li>
+        <li><a href="http://atlassian.com/company/careers" class="">Careers</a></li>
+        <li><a href="http://atlassian.com/company/customers" class="">Customers</a></li>
+        <li><a href="http://atlassian.com/company/press" class="">Press</a></li>
+        <li><a href="http://atlassian.com/company/contact" class="">Contact</a></li>
+      </ul>
+    </div>
+    <div class="col">
+      <h4><a href="http://atlassian.com/company/community">Community</a></h4>
+      <ul>
+        <li><a href="http://atlassian.com/company/community#events" class="">Events</a></li>
+        <li><a href="http://confluence.atlassian.com/display/AUG/Home" class="">Atlassian User Groups</a></li>
+        <li><a href="https://developer.atlassian.com/" class="">Atlassian Developers</a></li>
+        <li><a href="http://answers.atlassian.com/" class="">Answers Forum</a></li>
+        <li><a href="http://atlassian.com/local" class="">Local</a></li>
+        <li><a href="http://www.ptxstore.com/atlassian/" class="">T-Shirts</a></li>
+      </ul>
+    </div>
+    <div class="col last">
+      <h4>Connect</h4>
+      <ul>
+        <li>
+          <p>Subscribe to our <a href="http://atlassian.com/newsletter">newsletter</a>.</p>
+          <!-- Newsletter Form -->
+          <form method="post" id="subscribeForm" name="subscribeForm" onsubmit="pageTracker._trackEvent('Newsletter',' Signup - footer');" action="http://cl.exct.net/subscribe.aspx?lid=234098">
+            <input type="hidden" value="http://www.atlassian.com/en/wac/newsletter/subscribe-confirmation" name="thx">
+              <input type="hidden" value="http://www.atlassian.com/en/wac/newsletter/error" name="err">
+                <input type="hidden" value="http://www.atlassian.com/en/wac/newsletter/unsubscribe-confirmation" name="usub">
+                  <input type="hidden" value="sub_add_update" name="SubAction">
+                    <input type="hidden" value="132689" name="MID">
+                      <input type="text" name="Email Address" value="" id="newsletterSubscribe" class="placeholder" placeholder="Enter your email">
+                        <input type="submit" value="Search" id="newsletterSubmit" />
+                      </form>
+                    </li>
+                    <p class="emailError">
+                      Please enter a valid email address.
+                    </p>
+                    <!-- Social Links -->
+                    <li id="linkFacebook"><a href="http://www.facebook.com/AtlassianSoftware">Facebook</a></li>
+                    <li id="linkTwitter"><a href="http://twitter.com/atlassian">Twitter</a></li>
+                    <li id="linkBlogs"><a href="http://blogs.atlassian.com">Blogs</a></li>
+                    <li id="linkFeeds"><a href="https://my.atlassian.com/feeds">Feed Center</a></li>
+                  </ul>
+                </div>
+                <div id="copyright">
+                  <ul>
+
+                    <li>
+                      Copyright &copy; 2013 Atlassian. All Rights Reserved.
+                      &nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;
+                      <a class="" href="http://atlassian.com/company/privacy">Privacy</a>
+                      &nbsp;&nbsp;&nbsp;/&nbsp;&nbsp;&nbsp;
+                      <a class="" href="http://atlassian.com/company/privacy#trademark">Trademark</a>
+                    </li>
+                  </ul>
+                </div>
+              </div><!--/.box-->
+            </div>
+            <!-- end footer section -->
+
+          </div><!--/page-->
+
+
+          <script src="http://atlassian.wpengine.netdna-cdn.com/wp-content/themes/atlassian/js/scripts.js?version=08272013" type="text/javascript"></script>
+
+          <!-- social media js -->
+          <script type="text/javascript">(function() { var po = document.createElement('script'); po.type = 'text/javascript'; po.async = true; po.src = 'https://apis.google.com/js/plusone.js'; var s = document.getElementsByTagName('script')[0]; s.parentNode.insertBefore(po, s); })();</script>
+          <script type="text/javascript" src="//platform.twitter.com/widgets.js"></script>
+
+
+          <!-- Google Analytics -->
+          <script type="text/javascript">
+            var gaJsHost = (("https:" == document.location.protocol) ? "https://ssl." : "http://www.");
+            document.write(unescape("%3Cscript src='" + gaJsHost + "google-analytics.com/ga.js' type='text/javascript'%3E%3C/script%3E"));
+          </script>
+          <script type="text/javascript">
+            var pageTracker = _gat._getTracker("UA-6032469-1");
+            pageTracker._setDomainName(".atlassian.com");
+
+            var pageTracker_global = _gat._getTracker("UA-6032469-23");
+            pageTracker_global._setDomainName(".atlassian.com");
+
+            var pageTracker_devrel = _gat._getTracker("UA-6032469-39");
+            pageTracker_devrel._setDomainName(".atlassian.com");
+            //comment
+            function _p(l,n,s) {
+            if (!l || l=="") { return ""; } l += s;
+            var i = l.indexOf(n); if (i == -1) return "";
+            return l.substring((i+n.length),l.indexOf(s,i));
+            }
+
+            var r = _p(document.cookie,'_utma=',';'); // _utma holds returning visitor info
+
+            if(!pageTracker._getVisitorCustomVar(1) || !pageTracker_global._getVisitorCustomVar(1) || !r) {
+            //Retrieve campaign and referrer info from the _utmz cookie
+            var z = _p(document.cookie, '__utmz=', ';');
+            var a = _p(z,'utmgclid=','|'); // if gclid is there then this is an adwords click and source/medium are not set
+            var uS=(a ? 'google' : _p(z,'utmcsr=','|'))+'!'+(a ? 'cpc' : _p(z,'utmcmd=','|'))+'!'+_p(z,'utmctr=','|')+'!'
+            +_p(z,'utmcct=','|')+'!'+_p(z,'utmccn=','|');
+
+            //Replace URL-encoded 'spaces' with dashes
+            uS=uS.replace(/%20/g,'-');
+            //RegEx to retain only whitelisted characters
+            uS=uS.replace(/[^a-zA-Z0-9-~!*_.|]/g,'');
+            //Set string to specific length
+            uS=uS.substr(0,62);
+
+            pageTracker._setCustomVar(1,'ft',uS,1);
+            pageTracker_global._setCustomVar(1,'ft',uS,1);
+            }
+
+            pageTracker._trackPageview(blogCat);
+            pageTracker_global._trackPageview(blogCat);
+            pageTracker_devrel._trackPageview(blogCat);
+          </script>
+
+          <!-- Lightbox Plus v2.3 - 2011.08.11 - Message: 1-->
+          <script type="text/javascript">
+            jQuery(document).ready(function($){
+            $("a[rel*=lightbox]").colorbox({maxWidth:"800",opacity:0.8});
+            $(".lbpModal").colorbox({innerWidth:"50%",innerHeight:"50%",opacity:0.8,iframe:true});
+            });
+          </script>
+          <script type='text/javascript' src='http://atlassian.wpengine.netdna-cdn.com/wp-content/plugins/lightbox-plus/js/jquery.colorbox-min.js?ver=1.3.17.2'></script>
+          <script type='text/javascript' src='http://atlassian.wpengine.netdna-cdn.com/wp-content/plugins/prettify-code-syntax/javascripts/prettify.js?ver=3.7.1'></script>
+          <script type='text/javascript' src='http://atlassian.wpengine.netdna-cdn.com/wp-content/plugins/prettify-code-syntax/javascripts/load.js?ver=3.7.1'></script>
+
+	        <script src="http://stats.wordpress.com/e-201348.js" type="text/javascript"></script>
+	        <script type="text/javascript">
+	          st_go({v:'ext',j:'1:1.2.4',blog:'35772214',post:'26510'});
+	          var load_cmc = function(){linktracker_init(35772214,26510,2);};
+	          if ( typeof addLoadEvent != 'undefined' ) addLoadEvent(load_cmc);
+	          else load_cmc();
+	        </script>
+          <style type='text/css'>img#wpstats{display:none}</style>
+        </body>
+      </html>
