@@ -34,18 +34,9 @@ class HTMLCleanerTestCase(unittest.TestCase):
 
 class DocumentTestCase(unittest.TestCase):
 
-    def test_parse(self):
-        doc = Document('<html><head><script/></head><body></body></html>')
-        parsed = doc.parse()
-        self.assertEqual('<html><head></head><body></body></html>', parsed)
-
-    def test_parse_without_body(self):
-        doc = Document('<html></html>')
-        parsed = doc.parse()
-        self.assertEqual('<html><body></body></html>', parsed)
-
     def test_parse_title(self):
         doc = Document('<html><title>test_title</title></html>')
+        doc.parse()
         self.assertEqual('test_title', doc.title)
 
     def test_parse_title_from_id(self):
@@ -56,6 +47,7 @@ class DocumentTestCase(unittest.TestCase):
             <div id="title">div_title</div>
           </body>
         </html>''')
+        doc.parse()
         self.assertEqual('div_title', doc.title)
 
     def test_title_from_maintitle(self):
@@ -64,6 +56,7 @@ class DocumentTestCase(unittest.TestCase):
           <title>Main - sub</title>
         </html>
         ''')
+        doc.parse()
         self.assertEqual('Main', doc.title)
 
     def test_title_from_h1(self):
@@ -73,4 +66,5 @@ class DocumentTestCase(unittest.TestCase):
           <body><h1>real title</h1></body>
         </html>
         ''')
+        doc.parse()
         self.assertEqual('real title', doc.title)

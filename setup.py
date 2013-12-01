@@ -15,15 +15,14 @@ setup(name='lattr',
       include_package_data=True,
       zip_safe=False,
       install_requires=[
-          'Fabric',
           'Flask',
           'sqlalchemy',
-          'gunicorn',
           'lxml',
-          'beautifulsoup4'
+          'beautifulsoup4',
+          'requests'
       ],
       entry_points={
           'console_scripts': [
-              'fab=fabric.main:main',
+              'parser=lattr.parser:main'
           ]
       })

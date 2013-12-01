@@ -3,4 +3,7 @@ eggs/
 bin/
 *egg-info/
 develop-eggs/
+build/
+dist/
+.idea/
 .installed.cfg
